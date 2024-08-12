@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Categoria;
 use App\Models\Produto;
+use App\Models\Pedido;
+use App\Services\VendaService;
 
 class ProdutoController extends Controller
 {
@@ -74,5 +76,38 @@ class ProdutoController extends Controller
 
         session(['cart' => $carrinho]);
         return redirect()->route("ver_carrinho");
+    }
+
+    public function finalizarCarrinho(Request $request){
+
+        $prods = session('cart', []);
+        $vendaService = new VendaService();
+        $result = $vendaService->finalizarVenda($prods, \Auth::user());
+
+        if($result["status"] == "ok"){
+            $request->session()->forget("cart");
+        }
+
+        $request->session()->flash($result["status"], $result["message"]);
+        return redirect()->route("ver_carrinho");
+    }
+
+    public function historico(Request $request){
+
+        $data = [];
+
+        //Pegar o id do usuario logado
+        $idusuario = \Auth::user()->id;
+
+        $listaPedido = Pedido::where("usuario_id", $idusuario)
+                            ->orderBy("data_pedido", "desc")
+                            ->get();
+
+        $data["lista"] = $listaPedido;
+        return view("pedidos/historico", $data);
+    }
+
+    public function detalhes(Request $request){
+        echo "Detalhes do produto";
     }
 }
