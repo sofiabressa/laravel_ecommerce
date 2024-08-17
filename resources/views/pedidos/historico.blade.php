@@ -1,18 +1,26 @@
 @extends("layout");
-@section("conteudo")
+@section("script.js")
 <script>
-    $(function(){
-        $(".infocompra").on('click', () => {
-            //ao clicar no link com a .infocompra essa função sera executada
-            let id = $(this).attr("data-value")
-            $.post('{{ route("compras_detalhes") }}', { idpedido : id }, (result) => {
-                //função de callback
-                $("#conteudopedido").html(result)
-            })
-        })
-    })
+$(function(){
+    // Definir o token CSRF para todas as solicitações AJAX
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+    $(".infocompra").on('click', function() {
+        //ao clicar no link com a .infocompra essa função sera executada
+        let id = $(this).attr("data-value");
+        $.post('{{ route("compras_detalhes") }}', { idpedido : id }, function(result) {
+            //função de callback
+            $("#conteudopedido").html(result);
+        });
+    });
+});
 </script>
+@endsection
 
+@section("conteudo")
 
     <div class="col-12">
         <h2>Meus Pedidos</h2>

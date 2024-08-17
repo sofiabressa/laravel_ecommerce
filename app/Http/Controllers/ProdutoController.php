@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Categoria;
 use App\Models\Produto;
 use App\Models\Pedido;
+use App\Models\ItensPedido;
 use App\Services\VendaService;
 
 class ProdutoController extends Controller
@@ -44,7 +45,7 @@ class ProdutoController extends Controller
     }
 
     public function adicionarCarrinho(Request $request, $idproduto = 0){
-
+        
         //buscar produto pelo id
         $prod = Produto::find($idproduto);
 
@@ -108,6 +109,15 @@ class ProdutoController extends Controller
     }
 
     public function detalhes(Request $request){
-        echo "Detalhes do produto";
+
+        $idpedido = $request->input("idpedido");
+        $listaItens = ItensPedido::join("produtos", "produtos.id", "=", "itens_pedidos.produto_id")
+                                ->where("pedido_id", $idpedido)
+                                ->get([ 'itens_pedidos.*', 'itens_pedidos.valor as valorItem', 'produtos.*']);
+        
+        $data = [];
+        $data["listaItens"] = $listaItens;
+        return view("pedidos/detalhes", $data);
+
     }
 }
